@@ -79,8 +79,10 @@ class Database(object):
         events = sorted(self.get_events(), key=lambda e: (e['name'], e['timestamp']))
         return [(k, list(map(event, g))) for k, g in itertools.groupby(events, key=lambda e: e['name'])]
 
-
-db = Database('./students.txt', './db.json')
+# ensure db is set
+assert 'CHARIZARD_DB' in os.environ
+db = Database(os.path.join(os.environ['CHARIZARD_DB'], 'students.txt'),
+              os.path.join(os.environ['CHARIZARD_DB'], 'db.json'))
 
 
 @app.route('/', methods=['GET'])
