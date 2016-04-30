@@ -155,4 +155,4 @@ def api_validation():
 
 
 if __name__ == '__main__':
-    app.run('localhost', port=8888, debug=True)
+    app.run('localhost', port=8080, debug=True)
