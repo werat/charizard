@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <link rel="stylesheet" href="/static/bootstrap.min.css">
+        <script src="/static/jquery.min.js"></script>
+        <script src="/static/bootstrap.min.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="jumbotron">
+                <h1>Центр управления полетами</h1>
+            </div>
+        </div>
+        <div class="container">
+          <table class="table table-bordered table-striped">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Студент</th>
+                {% for _ in range(total_labs) %}
+                  <th>Лаба №{{_+1}}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for name, labs in students.items()|sort %}
+                <tr>
+                  <th scope="row">{{loop.index}}</th>
+                  <td>{{name}}</td>
+                    {% for _ in range(total_labs) %}
+                      <td>{{labs.get(_+1, '')}}</td>
+                    {% endfor %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+    </body>
+</html>

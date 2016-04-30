@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <link rel="stylesheet" href="/static/bootstrap.min.css">
+        <script src="/static/jquery.min.js"></script>
+        <script src="/static/bootstrap.min.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="jumbotron">
+                <h1>Центр управления полетами</h1>
+            </div>
+        </div>
+        <div class="container">
+            {% for name, events in grouped_events %}
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <div class="pull-right">
+                            Подходов: <span class="badge">{{ events|length|int }}</span>
+                        </div>
+                        {{ name }}
+                    </div>
+                    <div class="panel-body">
+                        {% for event in events %}
+                            <pre>{{ event|pretty_json }}</pre>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </body>
+</html>
+
+
+
