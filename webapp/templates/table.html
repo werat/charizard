@@ -5,6 +5,13 @@
         <link rel="stylesheet" href="/static/bootstrap.min.css">
         <script src="/static/jquery.min.js"></script>
         <script src="/static/bootstrap.min.js"></script>
+        <style type="text/css">
+          .marquee {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background: #ccc;
+          }
+        </style>
     </head>
     <body>
         <div class="container">
@@ -13,6 +20,13 @@
             </div>
         </div>
         <div class="container">
+          <div>
+            <marquee behavior="alternate" direction="right" scrollamount="3" scrolldelay="10" truespeed>
+              {% for _ in range(5) %}
+                <img src="/static/voenkom.jpg">
+              {% endfor %}
+            </marquee>
+          </div>
           <table class="table table-bordered table-striped">
             <thead>
               <tr>
