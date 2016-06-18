@@ -56,7 +56,7 @@ class Database(object):
     def get_students(self):
         if os.path.isfile(self.students_path):
             return [_.strip() for _ in io.open(self.students_path, encoding='utf8')]
-        return ['test']
+        return []
 
     def write_event(self, event):
         with io.open(self.db_path, 'a+', encoding='utf8') as db:
@@ -79,6 +79,20 @@ class Database(object):
         events = sorted(self.get_events(), key=lambda e: (e['name'], e['timestamp']))
         return [(k, list(map(event, g))) for k, g in itertools.groupby(events, key=lambda e: e['name'])]
 
+    def get_students_labs(self):
+        total_labs = 0
+        students = {}
+        for name, events in self.get_grouped_events():
+            labs = {}
+            for event in events:
+                lab = event['lab']
+                bonus_points = event['bonus-points']
+
+                total_labs = max(total_labs, lab)
+                labs[lab] = max(labs.get(lab, 0), bonus_points)
+            students[name] = labs
+        return total_labs, students
+
 # ensure db is set
 assert 'CHARIZARD_DB' in os.environ
 db = Database(os.path.join(os.environ['CHARIZARD_DB'], 'students.txt'),
@@ -98,27 +112,21 @@ def events():
 
 @app.route('/table', methods=['GET'])
 def table():
-    total_labs = 0
-    students = {}
-    for name, events in db.get_grouped_events():
-        labs = {}
-        for event in events:
-            lab = event['lab']
-            bonus_points = event['bonus-points']
-
-            total_labs = max(total_labs, lab)
-            labs[lab] = max(labs.get(lab, 0), bonus_points)
-        students[name] = labs
-
+    total_labs, students = db.get_students_labs()
     return render_template('table.html', total_labs=total_labs, students=students)
 
-    # header = 'Студент,' + ','.join('Лаба №{}'.format(_+1) for _ in range(total_labs))
-    # data = []
-    # for name, labs in students.items():
-    #     line = name + ',' + ','.join(str(labs.get(_+1, '')) for _ in range(total_labs))
-    #     data.append(line)
-    # data.sort()
-    # return (header + '\n' + '\n'.join(data) + '\n').encode('utf8')
+
+@app.route('/csv', methods=['GET'])
+def csv():
+    total_labs, students = db.get_students_labs()
+
+    header = 'Студент,' + ','.join('Лаба №{}'.format(_+1) for _ in range(total_labs))
+    data = []
+    for name, labs in students.items():
+        line = name + ',' + ','.join(str(labs.get(_+1, '')) for _ in range(total_labs))
+        data.append(line)
+    data.sort()
+    return (header + '\n' + '\n'.join(data) + '\n').encode('utf8')
 
 
 @app.route('/submit', methods=['POST'])
