@@ -23,6 +23,10 @@ else:
     CHARIZARD_ADMIN_PASS = os.environ['CHARIZARD_ADMIN_PASS']
 
 
+def parse_dt(dt):
+    return datetime.datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f')
+
+
 def check_auth(username, password):
     return username == 'werat' and password == CHARIZARD_ADMIN_PASS
 
@@ -80,7 +84,7 @@ class Database(object):
         def event(e):
             return {k: e[k] for k in ['datetime', 'comment', 'lab', 'bonus-points']}
 
-        events = sorted(self.get_events(), key=lambda e: (e['name'], e['timestamp']))
+        events = sorted(self.get_events(), key=lambda e: (e['name'], parse_dt(e['datetime'])))
         return [(k, list(map(event, g))) for k, g in itertools.groupby(events, key=lambda e: e['name'])]
 
     def get_students_labs(self):
@@ -141,7 +145,6 @@ def submit():
         'lab': int(request.form['lab']),
         'bonus-points': int(request.form['bonus-points']),
         'comment': list(filter(None, (l.strip() for l in request.form['comment'].split('\n')))),
-        'timestamp': int(time.time()),
         'datetime': str(datetime.datetime.utcnow()),
     }
     db.write_event(event)
