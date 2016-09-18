@@ -111,6 +111,7 @@ db = Database(os.path.join(os.environ['CHARIZARD_DB'], 'students.txt'),
 
 
 @app.route('/', methods=['GET'])
+@app.route('/index', methods=['GET'])
 def index():
     total_labs, students = db.get_students_labs()
     return render_template('index.html', total_labs=total_labs, students=students)
