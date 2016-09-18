@@ -6,7 +6,6 @@ import io
 import itertools
 import json
 import os
-import time
 
 from flask import Flask, request, render_template, redirect, url_for, Response
 
@@ -23,8 +22,12 @@ else:
     CHARIZARD_ADMIN_PASS = os.environ['CHARIZARD_ADMIN_PASS']
 
 
+def format_dt(dt):
+    return dt.strftime('%Y-%m-%d %H:%M:%S')
+
+
 def parse_dt(dt):
-    return datetime.datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f')
+    return datetime.datetime.strptime(dt, '%Y-%m-%d %H:%M:%S')
 
 
 def check_auth(username, password):
@@ -145,7 +148,7 @@ def submit():
         'lab': int(request.form['lab']),
         'bonus-points': int(request.form['bonus-points']),
         'comment': list(filter(None, (l.strip() for l in request.form['comment'].split('\n')))),
-        'datetime': str(datetime.datetime.utcnow()),
+        'datetime': format_dt(datetime.datetime.utcnow()),
     }
     db.write_event(event)
 
