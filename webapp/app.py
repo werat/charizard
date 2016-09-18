@@ -54,9 +54,13 @@ class Database(object):
         self.db_path = db_path
 
     def get_students(self):
+        result = []
         if os.path.isfile(self.students_path):
-            return [_.strip() for _ in io.open(self.students_path, encoding='utf8')]
-        return []
+            for line in io.open(self.students_path, encoding='utf8'):
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    result.append(line)
+        return result
 
     def write_event(self, event):
         with io.open(self.db_path, 'a+', encoding='utf8') as db:
@@ -100,20 +104,14 @@ db = Database(os.path.join(os.environ['CHARIZARD_DB'], 'students.txt'),
 
 
 @app.route('/', methods=['GET'])
-@requires_auth
 def index():
-    return render_template('index.html')
+    total_labs, students = db.get_students_labs()
+    return render_template('index.html', total_labs=total_labs, students=students)
 
 
 @app.route('/events', methods=['GET'])
 def events():
     return render_template('events.html', grouped_events=db.get_grouped_events())
-
-
-@app.route('/table', methods=['GET'])
-def table():
-    total_labs, students = db.get_students_labs()
-    return render_template('table.html', total_labs=total_labs, students=students)
 
 
 @app.route('/csv', methods=['GET'])
@@ -129,6 +127,12 @@ def csv():
     return (header + '\n' + '\n'.join(data) + '\n').encode('utf8')
 
 
+@app.route('/admin', methods=['GET'])
+@requires_auth
+def admin():
+    return render_template('admin.html')
+
+
 @app.route('/submit', methods=['POST'])
 @requires_auth
 def submit():
@@ -142,7 +146,7 @@ def submit():
     }
     db.write_event(event)
 
-    return redirect(url_for('index'))
+    return redirect(url_for('admin'))
 
 
 @app.route('/api/students', methods=['GET'])

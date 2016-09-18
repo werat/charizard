@@ -1,74 +1,56 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title></title>
-        <link rel="stylesheet" href="/static/bootstrap.min.css">
-        <link rel="stylesheet" href="/static/bootstrap-select.min.css">
-        <script src="static/jquery.min.js"></script>
-        <script src="static/bootstrap.min.js"></script>
-        <script src="static/bootstrap-select.min.js"></script>
-        <script src="static/bootstrap3-typeahead.min.js"></script>
-        <script src="static/validator.min.js"></script>
-    </head>
-    <body>
-        <div class="container">
-            <div class="jumbotron">
-                <h1>Центр управления полетами</h1>
-            </div>
-        </div>
-        <div class="container">
-            <div class="row">
-                <form class="form-horizontal" role="form" action="submit" method="POST" data-toggle="validator">
-                    <div class="row">
-                        <div class="form-group">
-                            <label class="control-label col-md-2" for="name">Студент:</label>
-                            <div class="col-md-9">
-                                <input type="text" class="form-control" id="name" placeholder="Имя студента" name="name"
-                                       data-provide="typeahead" required autocomplete="off" data-remote="/api/validation">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="form-group">
-                            <label class="control-label col-md-2" for="lab-number">Номер лабы</label>
-                            <div class="col-md-2">
-                                <select id="lab-number" class="selectpicker form-control" name="lab"
-                                        required autocomplete="off">
-                                    <option>1</option>
-                                    <option>2</option>
-                                    <option>3</option>
-                                    <option>4</option>
-                                </select>
-                            </div>
-                            <label class="control-label col-md-2" for="bonus-points">Доп баллы</label>
-                            <div class="col-md-1">
-                                <input type="number" class="form-control" id="bonus-points" placeholder="" name="bonus-points"
-                                       required min="0" autocomplete="off" value="0">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="form-group">
-                            <label class="control-label col-md-2" for="comment">Комментарий:</label>
-                            <div class="col-md-9">
-                                <textarea class="form-control" rows="5" id="comment" name="comment" autocomplete="off"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="col-md-offset-2 col-md-8">
-                            <button type="submit" class="btn btn-primary">Внести данные</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </body>
-    <script>
-        $(function() {
-            $.get('api/students', function(data){
-                $("#name").typeahead({ source: data }).focus();
-            },'json');
-        })
-    </script>
+  <head>
+    <title></title>
+    <link rel="stylesheet" href="/static/styles/bootstrap.min.css">
+    <script src="/static/scripts/jquery.min.js"></script>
+    <script src="/static/scripts/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="jumbotron">
+        <div class="pull-right"><a href="admin"><span class="glyphicon glyphicon-log-in"></span></a></div>
+        <h1>Центр управления полетами</h1>
+      </div>
+    </div>
+    <div class="container">
+      {#
+      <div>
+        <marquee behavior="alternate" direction="right" scrollamount="3" scrolldelay="10" truespeed>
+          {% for _ in range(5) %}
+            <img src="/static/voenkom.jpg">
+          {% endfor %}
+        </marquee>
+      </div>
+      #}
+      <table class="table table-bordered table-striped" style="margin-top: 15px">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Студент</th>
+            {% for _ in range(total_labs) %}
+              <th class="text-center">Лаба №{{_+1}}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for name, labs in students.items()|sort %}
+            <tr>
+              <th scope="row">{{loop.index}}</th>
+              <td>
+                <a href="events#{{loop.index}}"><span>{{name}}</span></a>
+              </td>
+              {% for _ in range(total_labs) %}
+                <td class="text-center">
+                  {% if labs.get(_+1, None) is not none %}
+                    <span class="glyphicon glyphicon-ok" style="color:green"></span>
+                  {% endif %}
+                </td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </body>
 </html>
