@@ -146,7 +146,6 @@ def csv():
     for name, labs in students_labs:
         line = name + ',' + ','.join(str(labs.get(_+1, '')) for _ in range(total_labs))
         data.append(line)
-    data.sort()
     return (header + '\n' + '\n'.join(data) + '\n').encode('utf8')
 
 
