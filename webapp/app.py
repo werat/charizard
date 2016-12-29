@@ -96,20 +96,20 @@ class Database(object):
             return {k: e[k] for k in ['datetime', 'comment', 'lab', 'bonus-points']}
 
         events = sorted(self.get_events(), key=lambda e: (e['name'], parse_dt(e['datetime'])))
-        return [(k, list(map(event, g))) for k, g in itertools.groupby(events, key=lambda e: e['name'])]
+        events = {k: list(map(event, g)) for k, g in itertools.groupby(events, key=lambda e: e['name'])}
+
+        for name in self.get_students():
+            if name not in events:
+                continue
+            yield name, events[name]
 
     def get_total_labs(self):
         return max_element((e['lab'] for e in self.get_events()), default=0)
 
     def get_students_labs(self):
-        grouped_events = dict(self.get_grouped_events())
-
-        for name in self.get_students():
-            if name not in grouped_events:
-                continue
-
+        for name, events in self.get_grouped_events():
             labs = {}
-            for event in grouped_events[name]:
+            for event in events:
                 lab = event['lab']
                 bonus_points = event['bonus-points']
                 labs[lab] = max(labs.get(lab, 0), bonus_points)
