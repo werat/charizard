@@ -55,6 +55,14 @@ def pretty_json(value):
     return json.dumps(value, sort_keys=True, indent=4, separators=(',', ': '), ensure_ascii=False)
 
 
+def max_element(iterable, default=None):
+    max_el = default
+    for element in iterable:
+        if element > max_el:
+            max_el = element
+    return max_el
+
+
 class Database(object):
     def __init__(self, students_path, db_path):
         self.students_path = students_path
@@ -90,19 +98,24 @@ class Database(object):
         events = sorted(self.get_events(), key=lambda e: (e['name'], parse_dt(e['datetime'])))
         return [(k, list(map(event, g))) for k, g in itertools.groupby(events, key=lambda e: e['name'])]
 
+    def get_total_labs(self):
+        return max_element((e['lab'] for e in self.get_events()), default=0)
+
     def get_students_labs(self):
-        total_labs = 0
-        students = {}
-        for name, events in self.get_grouped_events():
+        grouped_events = dict(self.get_grouped_events())
+
+        for name in self.get_students():
+            if name not in grouped_events:
+                continue
+
             labs = {}
-            for event in events:
+            for event in grouped_events[name]:
                 lab = event['lab']
                 bonus_points = event['bonus-points']
-
-                total_labs = max(total_labs, lab)
                 labs[lab] = max(labs.get(lab, 0), bonus_points)
-            students[name] = labs
-        return total_labs, students
+
+            yield name, labs
+
 
 # ensure db is set
 assert 'CHARIZARD_DB' in os.environ
@@ -113,8 +126,9 @@ db = Database(os.path.join(os.environ['CHARIZARD_DB'], 'students.txt'),
 @app.route('/', methods=['GET'])
 @app.route('/index', methods=['GET'])
 def index():
-    total_labs, students = db.get_students_labs()
-    return render_template('index.html', total_labs=total_labs, students=students)
+    total_labs = db.get_total_labs()
+    students_labs = db.get_students_labs()
+    return render_template('index.html', total_labs=total_labs, students_labs=students_labs)
 
 
 @app.route('/events', methods=['GET'])
@@ -124,11 +138,12 @@ def events():
 
 @app.route('/csv', methods=['GET'])
 def csv():
-    total_labs, students = db.get_students_labs()
+    total_labs = db.get_total_labs()
+    students_labs = db.get_students_labs()
 
     header = 'Студент,' + ','.join('Лаба №{}'.format(_+1) for _ in range(total_labs))
     data = []
-    for name, labs in students.items():
+    for name, labs in students_labs:
         line = name + ',' + ','.join(str(labs.get(_+1, '')) for _ in range(total_labs))
         data.append(line)
     data.sort()
